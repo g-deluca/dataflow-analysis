@@ -72,6 +72,9 @@
 (define (live-variables-star final-set)
   (chaotic-iteration (live-variables-analysis-star final-set)))
 
+(define (live-variables-worklist-star final-set)
+  (worklist-iteration (live-variables-analysis-star final-set)))
+
 
 ;; Tests
 (define test-stmt
@@ -116,4 +119,13 @@
                (Node (Assign 'z (Mult 'y 'y)) 5) (set 'y 'z)
                (Node (Assign 'x 'z) 8) (set 'x 'y 'z)
                (Node (Assign 'x 1) 3) (set 'x 'y)))
+(printf "OK\n")
+
+; worklist-iteration test
+(printf "Testing live-variables-worklist-star: ")
+(define result-wl-star ((live-variables-worklist-star (set 'x 'y' z)) test-stmt))
+(define result-wl-star-OUT (cdr result-star))
+
+(check-equal? (make-immutable-hash (hash->list result-star-OUT))
+              (make-immutable-hash (hash->list result-wl-star-OUT)))
 (printf "OK\n")

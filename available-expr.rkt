@@ -43,7 +43,9 @@
    ))
 
 (define availble-expr (chaotic-iteration avail-expr-analysis))
+(define availble-expr-wl (worklist-iteration avail-expr-analysis))
 
+; Tests
 (define test-stmt
   (parse-stmt '{{:= x {+ a b}}
                 {:= y {* a b}}
@@ -52,6 +54,8 @@
                         {:= x {+ a b}}}}
                 }))
 
+; available-expr test
+(printf "Testing available-expr: ")
 (define result (availble-expr test-stmt))
 (define result-IN (car result))
 
@@ -67,3 +71,13 @@
                (set (Plus 'a 'b))
                (Node (Assign 'y (Mult 'a 'b)) 2)
                (set (Plus 'a 'b))))
+(printf "OK\n")
+
+; available-expr-wl test
+(printf "Testing available-expr-wl: ")
+(define result-wl (availble-expr-wl test-stmt))
+(define result-wl-IN (car result))
+
+(check-equal? (make-immutable-hash (hash->list result-IN))
+              (make-immutable-hash (hash->list result-wl-IN)))
+(printf "OK\n")
