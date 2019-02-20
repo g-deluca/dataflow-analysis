@@ -36,9 +36,9 @@
         (hash-set! OUT n (init cfg n)))
 
     (when (not (empty? entry-fact))
-      (hash-set! OUT (CFG-entry cfg) (entry-fact fun cfg (CFG-entry cfg))))
+      (hash-set! OUT (CFG-entry cfg) (entry-fact stmt cfg (CFG-entry cfg))))
     (when (not (empty? exit-fact))
-      (hash-set! IN (CFG-exit cfg) (exit-fact fun cfg (CFG-exit cfg))))
+      (hash-set! IN (CFG-exit cfg) (exit-fact stmt cfg (CFG-exit cfg))))
 
     (hash-set! OUT (CFG-exit cfg) (set))
     (hash-set! IN (CFG-entry cfg) (set))

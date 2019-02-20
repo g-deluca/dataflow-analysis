@@ -120,31 +120,31 @@
                  (list
                   (Node (Assign 'c 4) _)
                   (Node (Equal 'a 1) _)
-                  (Node (NoOp) _)
+                  (Node (Skip) _)
                   (Node (Assign 'b 2) _)
                   (Node (Assign 'b 3) _)
                   (Node (Assign 'a 1) _))
                  (list
                   (Edge (Node (Assign 'a 1) _) (Node (Equal 'a 1) _) _)
-                  (Edge (Node (NoOp) _) (Node (Assign 'c 4) _) _)
+                  (Edge (Node (Skip) _) (Node (Assign 'c 4) _) _)
                   (Edge (Node (Equal 'a 1) _) (Node (Assign 'b 2) _) _)
                   (Edge (Node (Equal 'a 1) _) (Node (Assign 'b 3) _) _)
-                  (Edge (Node (Assign 'b 2) _) (Node (NoOp) _) _)
-                  (Edge (Node (Assign 'b 3) _) (Node (NoOp) _) _))))
+                  (Edge (Node (Assign 'b 2) _) (Node (Skip) _) _)
+                  (Edge (Node (Assign 'b 3) _) (Node (Skip) _) _))))
 
   (check-match (stmt->cfg (parse-stmt '{{if {== x 1} {:= a 1} {:= b 2}}}))
                 (CFG
                  (Node (Equal 'x 1) _)
-                 (Node (NoOp) _)
+                 (Node (Skip) _)
                  (list (Node (Equal 'x 1) _)
-                       (Node (NoOp) _)
+                       (Node (Skip) _)
                        (Node (Assign 'a 1) _)
                        (Node (Assign 'b 2) _))
                  (list
                   (Edge (Node (Equal 'x 1) _) (Node (Assign 'a 1) _) _)
                   (Edge (Node (Equal 'x 1) _) (Node (Assign 'b 2) _) _)
-                  (Edge (Node (Assign 'a 1) _) (Node (NoOp) _) _)
-                  (Edge (Node (Assign 'b 2) _) (Node (NoOp) _) _))))
+                  (Edge (Node (Assign 'a 1) _) (Node (Skip) _) _)
+                  (Edge (Node (Assign 'b 2) _) (Node (Skip) _) _))))
 
   (check-match (stmt->cfg (parse-stmt '{while {> 5 x} {:= x {+ x 1}}}))
                 (CFG
@@ -165,55 +165,17 @@
                   (Node (Greater 5 'x) _)
                   (Node (Assign 'x (Minus 'x 1)) _)
                   (Node (Equal 'x 3) _)
-                  (Node (NoOp) _)
+                  (Node (Skip) _)
                   (Node (Assign 'x 4) _)
                   (Node (Assign 'x 5) _))
                  (list
                   (Edge (Node (Greater 5 'x) _) (Node (Equal 'x 3) _) _)
                   (Edge (Node (Assign 'x (Minus 'x 1)) _) (Node (Greater 5 'x) _) _)
-                  (Edge (Node (NoOp) _) (Node (Assign 'x (Minus 'x 1)) _) _)
+                  (Edge (Node (Skip) _) (Node (Assign 'x (Minus 'x 1)) _) _)
                   (Edge (Node (Equal 'x 3) _) (Node (Assign 'x 4) _) _)
                   (Edge (Node (Equal 'x 3) _) (Node (Assign 'x 5) _) _)
-                  (Edge (Node (Assign 'x 4) _) (Node (NoOp) _) _)
-                  (Edge (Node (Assign 'x 5) _) (Node (NoOp) _) _))))
-
-  (check-match (fun->cfg (parse-function '{add {x y} {}
-                                                {return {+ x y}}}))
-                (CFG (Node (Return (Plus 'x 'y)) _)
-                     (Node (Return (Plus 'x 'y)) _)
-                     (list (Node (Return (Plus 'x 'y)) _)) '()))
-
-  (check-match (fun->cfg (parse-function '{foo {p x}
-                                  {var f q}
-                                  {{if {== {* p} 0}
-                                       {:= f 1}
-                                       {{:= q {malloc}}
-                                        {:= {* q} {- {* q} 1}}
-                                        {:= f {* {* p} {{* x} q x}}}}}
-                                   {return f}}}))
-                (CFG
-                 (Node (Equal (DeRef 'p) 0) _)
-                 (Node (Return 'f) _)
-                 (list
-                  (Node (Return 'f) _)
-                  (Node (Equal (DeRef 'p) 0) _)
-                  (Node (NoOp) _)
-                  (Node (Assign 'f 1) _)
-                  (Node (Assign 'f (Mult (DeRef 'p) (App (DeRef 'x) '(q x)))) _)
-                  (Node (Assign (DeRef 'q) (Minus (DeRef 'q) 1)) _)
-                  (Node (Assign 'q (Malloc)) _))
-                 (list
-                  (Edge (Node (NoOp) _) (Node (Return 'f) _) _)
-                  (Edge (Node (Equal (DeRef 'p) 0) _) (Node (Assign 'f 1) _) _)
-                  (Edge (Node (Equal (DeRef 'p) 0) _) (Node (Assign 'q (Malloc)) _) _)
-                  (Edge (Node (Assign 'f 1) _) (Node (NoOp) _) _)
-                  (Edge (Node (Assign 'f (Mult (DeRef 'p) (App (DeRef 'x) '(q x)))) _)
-                        (Node (NoOp) _) _)
-                  (Edge (Node (Assign 'q (Malloc)) _)
-                        (Node (Assign (DeRef 'q) (Minus (DeRef 'q) 1)) _) _)
-                  (Edge
-                   (Node (Assign (DeRef 'q) (Minus (DeRef 'q) 1)) _)
-                   (Node (Assign 'f (Mult (DeRef 'p) (App (DeRef 'x) '(q x)))) _) _))))
+                  (Edge (Node (Assign 'x 4) _) (Node (Skip) _) _)
+                  (Edge (Node (Assign 'x 5) _) (Node (Skip) _) _))))
 
   (let ([cfg (stmt->cfg (parse-stmt '{{if {== x 1} {:= a 1} {:= b 2}}}))])
     (check-match (get-succs (CFG-entry cfg) cfg)
