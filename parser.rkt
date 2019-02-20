@@ -11,14 +11,12 @@
 (define (parse-stmt s)
   (match s
     [`{:= ,id ,e} (Assign (parse-expr id) (parse-expr e))]
-    [`{output ,e} (Output (parse-expr e))]
     [`{if ,cnd ,thn ,els} (If (parse-expr cnd)
                               (parse-stmt thn)
                               (parse-stmt els))]
     [`{while ,cnd ,body} (While (parse-expr cnd)
                                 (parse-stmt body))]
-    [`{noop} (NoOp)]
-    [`{return ,e} (Return (parse-expr e))]
+    [`{skip} (Skip)]
     [`{,stmts ...} (Seq (map parse-stmt stmts))]
     [else (error 'parse-stmt "can not parse statement")]))
 
@@ -39,23 +37,16 @@
                              (parse-expr rhs))]
     [`{== ,lhs ,rhs} (Equal (parse-expr lhs)
                             (parse-expr rhs))]
-    [`{& ,(? symbol? id)} (AddrOf id)]
-    [`{* ,e} (DeRef (parse-expr e))]
-    [`{input} (Input)]
-    [`{null} (Null)]
-    {`{malloc} (Malloc)}
-    [`{,fun ,args ...} (App (parse-expr fun)
-                            (map parse-expr args))]
     [else (error 'parse-expr "can not parse expression")]))
 
 ; sexp -> Fun
-(define (parse-function f)
-  (match f
-    [`{,fname {,vars ...} {var ,locals ...} ,stmts}
-     (Fun fname vars locals (parse-stmt stmts))]
-    [`{,fname {,vars ...} {} ,stmts}
-     (Fun fname vars '() (parse-stmt stmts))]
-    [else (error 'parse-function "can not parse function")]))
+; (define (parse-function f)
+;   (match f
+;     [`{,fname {,vars ...} {var ,locals ...} ,stmts}
+;      (Fun fname vars locals (parse-stmt stmts))]
+;     [`{,fname {,vars ...} {} ,stmts}
+;      (Fun fname vars '() (parse-stmt stmts))]
+;     [else (error 'parse-function "can not parse function")]))
 
 ;;;;;;;;;;;;;;;;;
 

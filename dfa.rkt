@@ -26,11 +26,11 @@
   (define kill (Analysis-kill analysis))
   (define meet (Analysis-meet analysis))
 
-  (lambda (fun)
-    (define cfg (fun->cfg fun))
+  (lambda (stmt)
+    (define cfg (stmt->cfg stmt))
     (define IN (make-hash))
     (define OUT (make-hash))
-    
+
     (for ([n (CFG-nodes cfg)])
         (hash-set! IN n (init cfg n))
         (hash-set! OUT n (init cfg n)))
@@ -42,7 +42,7 @@
 
     (hash-set! OUT (CFG-exit cfg) (set))
     (hash-set! IN (CFG-entry cfg) (set))
-    
+
     (define (loop IN OUT old-IN old-OUT)
       (for ([n (CFG-nodes cfg)])
         (cond [(eq? 'forward direction)
@@ -54,7 +54,7 @@
                  (when (not (empty? succs)) (hash-set! OUT n (apply meet succs))))
                (hash-set! IN n (set-union (set-subtract (hash-ref OUT n) (kill cfg n)) (gen cfg n)))]
               [else (error "not a direction")]))
-      
+
       (if (and (equal? IN old-IN)
                (equal? OUT old-OUT))
           (cons IN OUT)

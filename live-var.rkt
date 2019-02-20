@@ -30,12 +30,6 @@
         (set-union (get-vars l) (get-vars r))]
        [(Node (Greater l r) _)
         (set-union (get-vars l) (get-vars r))]
-       [(Node (App f args) _)
-        (apply set-union (map get-vars args))]
-       [(Node (Output e) _)
-        (get-vars e)]
-       [(Node (Return e) _)
-        (get-vars e)]
        [else (set)]))
    ; kill
    (λ (cfg n)

@@ -18,7 +18,7 @@
 (define (stmt->cfg stmt)
   (define node-id 1)
   (define edge-id 1)
-  
+
   (define (make-node body [label node-id])
     (set! node-id (add1 node-id))
     (Node body label))
@@ -26,14 +26,14 @@
   (define (make-edge from to [label edge-id])
     (set! edge-id (add1 edge-id))
     (Edge from to label))
-  
+
   (define (cfg-helper stmt)
     (match stmt
       [(If cnd thn els)
        (define thn-cfg (cfg-helper thn))
        (define els-cfg (cfg-helper els))
        (define entry (make-node cnd))
-       (define exit (make-node (NoOp)))
+       (define exit (make-node (Skip)))
        (CFG entry exit
             (append (list entry exit)
                     (CFG-nodes thn-cfg)
@@ -77,8 +77,6 @@
 (define (get-exprs cfg)
   (define (get-exprs-from-node n)
     (match (Node-body n)
-      [(Output e) (list e)]
-      [(Return e) (list e)]
       [(Assign id e) (list e)]
       [(Plus l r) (Plus l r)]
       [(Minus l r) (Minus l r)]
@@ -86,9 +84,6 @@
       [(Div l r) (Div l r)]
       [(Greater l r) (Greater l r)]
       [(Equal l r) (Equal l r)]
-      [(App f args) args]
-      [(AddrOf var) (AddrOf var)]
-      [(DeRef e) (DeRef e)]
       [else (list)]))
   (flatten (map get-exprs-from-node (CFG-nodes cfg))))
 
@@ -98,14 +93,14 @@
                      (Node (Assign 'a 3) _)
                      (list (Node (Assign 'a 3) _))
                      '()))
-  
+
   (check-match (stmt->cfg (parse-stmt '{{:= a 3} {:= b 4}}))
                 (CFG
                  (Node (Assign 'a 3) _)
                  (Node (Assign 'b 4) _)
                  (list (Node (Assign 'b 4) _) (Node (Assign 'a 3) _))
                  (list (Edge (Node (Assign 'a 3) _) (Node (Assign 'b 4) _) _))))
-  
+
   (check-match (stmt->cfg (parse-stmt '{{:= a 1}
                                          {:= b 2}
                                          {:= c 3}}))
@@ -136,7 +131,7 @@
                   (Edge (Node (Equal 'a 1) _) (Node (Assign 'b 3) _) _)
                   (Edge (Node (Assign 'b 2) _) (Node (NoOp) _) _)
                   (Edge (Node (Assign 'b 3) _) (Node (NoOp) _) _))))
-  
+
   (check-match (stmt->cfg (parse-stmt '{{if {== x 1} {:= a 1} {:= b 2}}}))
                 (CFG
                  (Node (Equal 'x 1) _)
@@ -213,7 +208,7 @@
                   (Edge (Node (Equal (DeRef 'p) 0) _) (Node (Assign 'q (Malloc)) _) _)
                   (Edge (Node (Assign 'f 1) _) (Node (NoOp) _) _)
                   (Edge (Node (Assign 'f (Mult (DeRef 'p) (App (DeRef 'x) '(q x)))) _)
-                        (Node (NoOp) _) _) 
+                        (Node (NoOp) _) _)
                   (Edge (Node (Assign 'q (Malloc)) _)
                         (Node (Assign (DeRef 'q) (Minus (DeRef 'q) 1)) _) _)
                   (Edge
