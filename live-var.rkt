@@ -39,9 +39,41 @@
    ; meet
    set-union))
 
+(define (live-variables-analysis-star final-set)
+  (Analysis
+   ; direction
+   'backward
+   ; init
+   (λ (cfg n) (set))
+   ; entry fact
+   (λ (fun cfg entry) (set))
+   ; exit fact
+   (λ (fun cfg exit) final-set)
+   ; gen
+   (λ (cfg n)
+     (match n
+       [(Node (Assign id e) _) (get-vars e)]
+       [(Node (Equal l r) _)
+        (set-union (get-vars l) (get-vars r))]
+       [(Node (Greater l r) _)
+        (set-union (get-vars l) (get-vars r))]
+       [else (set)]))
+   ; kill
+   (λ (cfg n)
+     (match n
+       [(Node (Assign id e) _) (set id)]
+       [else (set)]))
+   ; meet
+   set-union))
+
 (define live-variables
   (chaotic-iteration live-variables-analysis))
 
+(define (live-variables-star final-set)
+  (chaotic-iteration (live-variables-analysis-star final-set)))
+
+
+;; Tests
 (define test-stmt
   (parse-stmt
    '{{:= x 2}
@@ -52,6 +84,8 @@
          {:= z {* y y}}}
      {:= x z}}))
 
+; live-variables test
+(printf "Testing live-variables: ")
 (define result (live-variables test-stmt))
 (define result-OUT (cdr result))
 
@@ -65,3 +99,21 @@
                (Node (Assign 'x 2) 1) (set)
                (Node (Assign 'x 'z) 8) (set)
                (Node (Assign 'z (Mult 'y 'y)) 5) (set 'z)))
+(printf "OK\n")
+
+; live-variables-star test
+(printf "Testing live-variables-star: ")
+(define result-star ((live-variables-star (set 'x 'y' z)) test-stmt))
+(define result-star-OUT (cdr result-star))
+
+(check-equal? (make-immutable-hash (hash->list result-star-OUT))
+              (hash
+               (Node (Greater 'y 'x) 6) (set 'y)
+               (Node (Skip) 7) (set 'y 'z)
+               (Node (Assign 'z 'y) 4) (set 'y 'z)
+               (Node (Assign 'x 2) 1) (set)
+               (Node (Assign 'y 4) 2) (set 'y)
+               (Node (Assign 'z (Mult 'y 'y)) 5) (set 'y 'z)
+               (Node (Assign 'x 'z) 8) (set 'x 'y 'z)
+               (Node (Assign 'x 1) 3) (set 'x 'y)))
+(printf "OK\n")
