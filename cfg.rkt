@@ -30,9 +30,9 @@
   (define (cfg-helper stmt)
     (match stmt
       [(If cnd thn els)
+       (define entry (make-node cnd))
        (define thn-cfg (cfg-helper thn))
        (define els-cfg (cfg-helper els))
-       (define entry (make-node cnd))
        (define exit (make-node (Skip)))
        (CFG entry exit
             (append (list entry exit)
