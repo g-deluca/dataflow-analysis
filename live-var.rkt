@@ -4,6 +4,7 @@
 ;; A variable is live at a program point if its
 ;; current value may be read during the remaining
 ;; execution of program.
+(provide (all-defined-out))
 
 (require "ast.rkt")
 (require "parser.rkt")
