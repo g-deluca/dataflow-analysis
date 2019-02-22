@@ -61,13 +61,13 @@
 
 (check-equal? (make-immutable-hash (hash->list result-IN))
               (hash
-               (Node (Assign 'a (Plus 'a 1)) 3)
+               (Node (Assign 'a (Plus 'a 1)) 4)
                (set (Plus 'a 'b))
                (Node (Assign 'x (Plus 'a 'b)) 1)
                (set)
-               (Node (Assign 'x (Plus 'a 'b)) 4)
+               (Node (Assign 'x (Plus 'a 'b)) 5)
                (set)
-               (Node (Greater 'y (Plus 'a 'b)) 5)
+               (Node (Greater 'y (Plus 'a 'b)) 3)
                (set (Plus 'a 'b))
                (Node (Assign 'y (Mult 'a 'b)) 2)
                (set (Plus 'a 'b))))

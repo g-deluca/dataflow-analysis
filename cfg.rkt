@@ -45,8 +45,8 @@
                     (CFG-edges thn-cfg)
                     (CFG-edges els-cfg)))]
       [(While cnd body)
-       (define body-cfg (cfg-helper body))
        (define entry (make-node cnd))
+       (define body-cfg (cfg-helper body))
        (define es (list (make-edge entry (CFG-entry body-cfg))
                         (make-edge (CFG-exit body-cfg) entry)))
        (CFG entry entry
